@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
+
 import { WeatherApi } from "../api";
+
 import { CountryApi } from "../api";
+
+import HelmetComponent from "../components/HelmetComponent";
+
 import weatherData from '../components/WeatherData';
-import NavBar from "../components/NavBar";
+
 import AddTemplate from "../components/AddTemplate";
-import { useWeatherDispatch, useWeatherNextId } from '../WeatherContext';
+
+import { useAppState, useAppDispatch } from '../WeatherContext';
+
 
 const Add = () => {
   const [coords, setCoords] = useState({
@@ -23,16 +30,16 @@ const Add = () => {
     temp_min: 0,
     temp_max: 0
   })
-  const [cityList,setCityList] = useState([]);
+  const [cityList, setCityList] = useState(null);
+  let cities = [];
   const [inputValue,setInputValue] = useState(null);
   //const [inputList,setInputList] = useState([]);
+  
   const [showWeatherCard, setShowWeatherCard] = useState(false);
-  const [addMode, setAddMode] = useState(false);
+  const [addMode, setAddMode] = useState(null);
   const COORDS = 'coords';
   const CITY = 'city';
-  
-  const dispatch = useWeatherDispatch();
-  const nextId = useWeatherNextId();
+  const dispatch = useAppDispatch();
   
   const getWeather = async (request) => {
     if(request === COORDS){
@@ -64,12 +71,13 @@ const Add = () => {
       const { data } = res
       data.forEach(country => {
         if(country.capital.length){
-          cityList.push(country.capital);
+          cities.push(country.capital);
         }
       });
-    })
-    cityList.sort();
-    console.log(cityList);
+    }).then(res => {
+        setCityList(cities.sort());
+      })
+
   } 
   
   /*
@@ -101,18 +109,21 @@ const Add = () => {
     }
   };
 
+  const state = useAppState();
   const handleClick = () => {
-    dispatch({
-      type: 'CREATE',
-      search: {
-        id: nextId.current,
+    const login = state.login.email;
+    if(login){
+      dispatch({
+        type: 'ADD_CITY',
         city: searchCity.city
-      }
-    })
+      })
+      setAddMode('Fail');
+      setAddMode('Success');
+    } else {
+      setAddMode('Fail');
+    } 
     setShowWeatherCard(false);
-    setAddMode(true);
-    setTimeout(setAddMode(false),2000);
-    nextId.current += 1;
+    setTimeout(()=> setAddMode(null),2000);
   }
 
   useEffect(() => {
@@ -139,6 +150,7 @@ const Add = () => {
 
   useEffect(()=>{
     if(searchCity.city !== null){
+      setShowWeatherCard(false);
       setShowWeatherCard(true);
     } else {
       setShowWeatherCard(false);
@@ -147,7 +159,7 @@ const Add = () => {
 
   return (
     <>
-      <NavBar />
+      <HelmetComponent title="Add" />
       <AddTemplate
         onChange={handleChange}
         onSubmit={handleSubmit}

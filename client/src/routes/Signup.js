@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import axios from 'axios';
+
 import FormTemplate from "../components/FormTemplate";
-import NavBar from "../components/NavBar";
+
 import HelmetComponent from "../components/HelmetComponent";
 
-function Signup(){
-  const [signup,setSignup] = useState(false);
+import { useAppDispatch, useAppNextId } from '../WeatherContext';
+
+
+function Signup({ history }){
   const [email,setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -16,6 +18,10 @@ function Signup(){
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
   };
+
+
+  const dispatch = useAppDispatch();
+  const nextId = useAppNextId();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,28 +40,34 @@ function Signup(){
     } else if (chkPassword(password) === false) {
       alert("Error: Minimum Password Length is 6");
     } else {
-
-      let body = {
+      const userInfo = {
+        id: nextId,
         email: email,
-        password: password
-      };
+        password: password,
+        city: []
+      }
 
-      axios.post('/api/users/register', body)
-      .then(response => {
-        response.data.success ? setSignup(true) : alert('Error occur')
-      }) 
+      dispatch({
+        type: "POST_SIGNUP",
+        signup: userInfo
+      })
+      dispatch({
+        type: "POST_LOGIN",
+        login: userInfo
+      })
+
+      alert(`Welcome ${userInfo.email}:)`);
+      history.push('/home')
     }
   };
 
   return (
     <>
       <HelmetComponent title="Signup" />
-      <NavBar />
       <FormTemplate 
         onEmailChange={handleEmailChange}
         onPasswordChange={handlePasswordChange}
         onSubmit={handleSubmit}
-        signup={signup}
       ></FormTemplate>
     </>
   );

@@ -1,9 +1,17 @@
 import React,{ useState } from 'react';
+
 import styled from 'styled-components';
+
 import { slideRight, slideLeft } from './keyframe';
+
 import { Link , withRouter} from 'react-router-dom';
+
 import { IoReorderThreeOutline } from 'react-icons/io5';
+
 import { HiUserCircle } from 'react-icons/hi';
+
+import { useAppState } from '../WeatherContext';
+
 
 const UpperNav = styled.div`
     position: fixed;
@@ -20,12 +28,13 @@ const UpperNav = styled.div`
     box-shadow: 0 1px 6px 0 rgb(32 33 36 / 28%);
 `
 
-const NavIconContainer = styled.div`
+const NavIcon = styled(IoReorderThreeOutline)`
     position: absolute;
-    top: 0;
+    top: 0px;
     left: 0;
-    padding: 10px 20px;
-    z-index: 10;
+    margin: 15px 0 0 20px;
+    z-index: 15;
+    color: ${props => props.openNav ? 'white' : 'black'};
     &:hover{
         cursor: pointer;
     }
@@ -42,15 +51,8 @@ const SpreadNav = styled.nav`
     height: 100vh;
     width: 100vw;
     display: ${props => props.openNav ? 'block' : 'none'};
-    z-index: ${props => props.openNav ? 9 : 0};
+    z-index: ${props => props.openNav ? 14 : 0};
     background-color: ${props => props.openNav ? 'rgba(0,0,0,0.2)' : 'none'};
-`
-
-const NavBG = styled.div`
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
 `
 
 const NavSideMenu = styled.div`
@@ -82,7 +84,7 @@ const Title = styled.div`
 
 const Image = styled.div`
     font-size: 80px;
-    color: #A8A4D2;
+    color: white;
     padding-top: 10px;
 `
 
@@ -114,31 +116,35 @@ const Item = styled.li`
     border-bottom: ${props => props.current ? 'solid 1.5px #5697ff' : 'transparent'};
 `
 
-const NavBar = withRouter(({ location: { pathname }}) => {
+function NavBar({ location: { pathname }}){
+    let state = useAppState();
+    
     const [openNav,setOpenNav] = useState(false);
     const onClick = () => {
         setOpenNav(!openNav);
     };
+
+    const handleLogout = () => {
+        state.login = {};
+    }
+
     return (
         <>
             <UpperNav>
-                <NavIconContainer onClick={onClick}>
-                    <IoReorderThreeOutline />
-                </NavIconContainer>
+                <NavIcon onClick={onClick} openNav={openNav} />
                 <Link to="/home">
                     <HompageTitle>TODAY</HompageTitle>
                 </Link>
             </UpperNav> 
             <SpreadNav openNav={openNav}>
-                {/*<NavBG onClick={onClick}></NavBG> */}
                 <NavSideMenu openNav={openNav}>
                     <UserProfile>
-                        <Title >WELCOME BACK</Title>
-                        <Image ><HiUserCircle /></Image>
-                        <Email ></Email>
+                        <Title>WELCOME BACK</Title>
+                        <Image><HiUserCircle /></Image>
+                        <Email></Email>
                         <FreePlan >Free Plan</FreePlan>
                     </UserProfile>
-                    <List>
+                    <List onClick={onClick}>
                         <Item current={pathname === '/home'}>
                             <Link to="/home" >Home</Link>
                         </Item>
@@ -146,14 +152,13 @@ const NavBar = withRouter(({ location: { pathname }}) => {
                             <Link to="/add" >Add City</Link>
                         </Item>
                         <Item current={pathname === '/'}>
-                            <Link to="/login" >Logout</Link>
+                            <Link to="/" onClick={handleLogout}>Logout</Link>
                         </Item>
                     </List>
                 </NavSideMenu>
             </SpreadNav>
-            
         </>
     )
-})
+}
 
-export default NavBar;
+export default withRouter(NavBar);

@@ -6,13 +6,11 @@ import HelmetComponent from "../components/HelmetComponent";
 
 import HomeTemaplate from "../components/HomeTemplate";
 
-import NavBar from "../components/NavBar";
-
 import WeatherCard from '../components/WeatherCard';
 
 import WeatherData from '../components/WeatherData';
 
-import { useWeatherState } from '../WeatherContext';
+import { useAppState } from '../WeatherContext';
 
 
 const WeatherListBlock = styled.div`
@@ -31,28 +29,34 @@ const WeatherListBlock = styled.div`
 `
 
 function Home(){
-  const weathers = useWeatherState(); // weatherContex.js에서 id, cityName 저장돼있는 state불러옴
-  const [weather,setWeather] = useState([]) // cityName으로 weather API로부터 불러온 정보 저장(cityName, weather, temperature, temperatureMin, temperatureMax )
-  const test = []
+  const state = useAppState(); // weatherContex.js에서 id, cityName 저장돼있는 state불러옴
+  const [citys,setCitys]=useState(null);
+  const [weather,setWeather] = useState([]); // cityName으로 weather API로부터 불러온 정보 저장(cityName, weather, temperature, temperatureMin, temperatureMax )
   
 
   useEffect(()=>{
-    weathers.map(item => (
-      WeatherData(item.city)
-      .then(res => {
-        setWeather(weather => [...weather, res]);
-        console.log(weather);
-      })
-    ))
-  },[])
+    setCitys(state.login.city);
+  },[]);
+
+  useEffect(()=>{
+    if(citys){
+      citys.map(city => {
+        WeatherData(city)
+        .then(res => {
+          console.log(res);
+          setWeather(weather => [...weather, res]);
+        })
+    })}
+  },[citys])
+
 
   return (
     <>
       <HelmetComponent title="Home" />
-      <NavBar></NavBar>
       <WeatherListBlock>
-        {weather.map(item => (  // weather에 저장된 정보로 WeatherCard 호출(?)
+        {weather.map((item,i) => (  // weather에 저장된 정보로 WeatherCard 호출(?)
             <WeatherCard
+              key = {i}
               searchCity = {item}
             />
           ))}

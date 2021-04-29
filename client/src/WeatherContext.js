@@ -1,64 +1,87 @@
 import React, { createContext, useContext, useReducer, useRef } from 'react';
 
-const initialList = [
-    {
-        id: 1,
-        city: 'Rome'
-    },
-    {
-        id: 2,
-        city: 'Seoul'
-    }
-]
 
-function weatherReducer(state, action){
+const initialList = {
+    accounts: [
+        {
+            id: 1,
+            email: "hyewon@naver.com",
+            password: "123456",
+            city: ['Rome','Paris']
+        },
+        {
+            id: 2,
+            email: "hyewon@naver.com",
+            password: "1234567",
+            city: ['Seoul']
+        },
+        {
+            id: 3,
+            email: "hyewon@naver.com",
+            password: "1234568",
+            city: []
+        }
+    ],
+    login : {
+    }
+}
+
+function Reducer(state, action){
     switch(action.type){
-        case 'CREATE':
-            return state.concat(action.search);
+        case 'ADD_CITY':
+            state.login.city.push(action.city);
+            state.accounts[state.login.id-1] = state.login;
+            return state;
+        case 'POST_LOGIN':
+            state.login = action.login;
+            return state;
+        case 'POST_SIGNUP':
+            state.accounts.push(action.signup);
+            return state;
         default:
             throw new Error('Unhandled action type: ${action.type}');
     }
 }
 
-const WeatherStateContext = createContext();
-const WeatherDispatchContext = createContext();
-const WeatherNextIdContext = createContext();
+const StateContext = createContext();
+const DispatchContext = createContext();
+const NextIdContext = createContext();
 
-export function WeatherProvider({ children }){
-    const [state, dispatch] = useReducer(weatherReducer, initialList)
-    const nextId = useRef(3);
+export function Provider({ children }){
+    const [state, dispatch] = useReducer(Reducer, initialList)
+    const nextId = useRef(4);
 
     return(
-        <WeatherStateContext.Provider value={state}>
-            <WeatherDispatchContext.Provider value={dispatch}>
-                <WeatherNextIdContext.Provider value={nextId}>
+        <StateContext.Provider value={state}>
+            <DispatchContext.Provider value={dispatch}>
+                <NextIdContext.Provider value={nextId}>
                     {children}
-                </WeatherNextIdContext.Provider>
-            </WeatherDispatchContext.Provider>
-        </WeatherStateContext.Provider>
+                </NextIdContext.Provider>
+            </DispatchContext.Provider>
+        </StateContext.Provider>
     );
 }
 
-export function useWeatherState(){
-    const context = useContext(WeatherStateContext);
+export function useAppState(){
+    const context = useContext(StateContext);
     if (!context) {
-        throw new Error('Cannot find WeatherProvider');
+        throw new Error('Cannot find Provider');
     }
     return context;
 }
 
-export function useWeatherDispatch(){
-    const context = useContext(WeatherDispatchContext);
+export function useAppDispatch(){
+    const context = useContext(DispatchContext);
     if(!context){
-        throw new Error('Cannot find WeatherProvider');
+        throw new Error('Cannot find Provider');
     }
     return context;
 }
 
-export function useWeatherNextId(){
-    const context = useContext(WeatherNextIdContext);
+export function useAppNextId(){
+    const context = useContext(NextIdContext);
     if (!context) {
-        throw new Error('Cannot find WeatherProvider');
+        throw new Error('Cannot find Provider');
     }
     return context;
 }

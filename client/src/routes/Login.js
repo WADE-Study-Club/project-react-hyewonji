@@ -1,52 +1,34 @@
-import React, { useState, useEffect } from "react";
-import axios from 'axios';
+import React, { useState } from "react";
+
 import HelmetComponent from "../components/HelmetComponent";
-import NavBar from "../components/NavBar";
+
 import FormTemplate from "../components/FormTemplate";
 
-const userLists = [
-  {
-    id: 1,
-    email: "hyewon@naver.com",
-    password: "123456",
-  },
-  {
-    id: 2,
-    email: "hyewon@naver.com",
-    password: "1234567",
-  },
-  {
-    id: 3,
-    email: "hyewon@naver.com",
-    password: "1234568",
-  },
-];
+import { useAppState, useAppDispatch } from "../WeatherContext";
 
-function Login(){
-  const [isLogin, setIsLogin] = useState(false);
-  const [userLogin, setUserLogin] = useState({
-    email: "",
-    password: "",
-  });
+
+
+function Login({ history }){
+  
+  const state = useAppState();
+  const accounts = state.accounts;
+
+  const dispatch = useAppDispatch();
+
+  const [email,setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
 
   const handleEmailChange = (e) => {
-    setUserLogin({
-      ...userLogin,
-      email: e.target.value,
-    });
+    setEmail(e.target.value);
   };
 
   const handlePasswordChange = (e) => {
-    setUserLogin({
-      ...userLogin,
-      password: e.target.value,
-    });
+    setPassword(e.target.value);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const email = userLogin.email;
-    const password = userLogin.password;
 
     const chkEmail = (str) => {
       var regExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
@@ -62,40 +44,9 @@ function Login(){
     } else if (chkPassword(password) === false) {
       alert("Error: Minimum Password Length is 6");
     } else {
-
-      let body = {
-        email: userLogin.email,
-        password: userLogin.password
-      };
-      axios.post('/api/users/login', body)
-      .then(response => {
-        response.data.loginSuccess ? setIsLogin(true) : alert(response.data.message)
-      }) 
-    }
-  };
-
-  return (
-    <>
-      <HelmetComponent title="Login"></HelmetComponent>
-      <NavBar />
-      <FormTemplate
-        onPage="login"
-        onEmailChange={handleEmailChange}
-        onPasswordChange={handlePasswordChange}
-        onSubmit={handleSubmit}
-        isLogin={isLogin}
-      ></FormTemplate>
-    </>
-  );
-};
-
-export default Login;
-
-
-/*      const userIdCheck = userLists.filter((user) => {
+      const userIdCheck = accounts.filter((user) => {
         return user.email === email;
       });
-
       if (userIdCheck.length === 0) {
         alert("회원정보가 존재하지 않습니다.");
       } else {
@@ -104,10 +55,32 @@ export default Login;
         });
 
         if (userPassword.length === 0) {
-          alert("비밀번호가 잘못되었습니다.");
+          alert("비밀번호가 틀렸습니다.");
         } else {
-          alert("로그인되었습니다!")
-          history.push = '/home';
-          //setIsLogin(true);
+          dispatch({
+            type: 'POST_LOGIN', 
+            login: userPassword[0]
+          });
+          alert(`Hello ${email} :)`);
+          history.push('/home')
         }
-      }*/
+      }
+
+
+    }
+  };
+
+  return (
+    <>
+      <HelmetComponent title="Login" />
+      <FormTemplate
+        onPage="login"
+        onEmailChange={handleEmailChange}
+        onPasswordChange={handlePasswordChange}
+        onSubmit={handleSubmit}
+      ></FormTemplate>
+    </>
+  );
+};
+
+export default Login;
